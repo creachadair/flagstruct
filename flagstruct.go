@@ -104,7 +104,7 @@ func parseFlags(v interface{}) ([]*flagInfo, error) {
 // interface.  As a special case, the built-in types supported by the flag
 // package are also allowed (bool, int, time.Duration, float64, etc.).
 //
-// Unexported fields, and fields without a flag tag are skipped without error;
+// Unexported fields and fields without flag tags are skipped without error;
 // however it is an error if there are no flaggable fields in the type.
 func Register(v interface{}, fs *flag.FlagSet) error {
 	flags, err := parseFlags(v)
