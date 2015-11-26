@@ -96,7 +96,7 @@ func parseFlags(v interface{}) ([]*flagInfo, error) {
 	return flags, nil
 }
 
-// Register adds flags to fs for each field of v that defines a flag.
+// Register adds a flag to fs for each field of v that defines a flag.
 // It is an error if v is not a pointer to a struct value.
 //
 // An exported field is flaggable if it has a field tag of the form
