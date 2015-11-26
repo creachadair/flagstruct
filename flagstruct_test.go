@@ -23,9 +23,7 @@ func TestTypeErrors(t *testing.T) {
 			U uint    `json:"q"` // missing flag: clause in struct tag
 			S string  `flag:""`  // bogus flag: clause in struct tag
 		}{},
-		&struct { // no flaggable fields
-
-		}{},
+		&struct{}{}, // no flaggable fields
 	}
 	fs := flag.NewFlagSet("dummy", flag.PanicOnError)
 	for _, bad := range tests {
