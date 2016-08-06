@@ -25,26 +25,27 @@ type flagInfo struct {
 
 // register registers fi with fs if fi.field implements flag.Value or is one of
 // the supported built-in types.
-func (fi *flagInfo) register(fs *flag.FlagSet) error {
+func (fi *flagInfo) register(fs *flag.FlagSet, prefix string) error {
+	p := func(s string) string { return prefix + s }
 	switch t := fi.field.(type) {
 	case flag.Value:
-		fs.Var(t, fi.name, fi.help)
+		fs.Var(t, p(fi.name), fi.help)
 	case *bool:
-		fs.BoolVar(t, fi.name, *t, fi.help)
+		fs.BoolVar(t, p(fi.name), *t, fi.help)
 	case *time.Duration:
-		fs.DurationVar(t, fi.name, *t, fi.help)
+		fs.DurationVar(t, p(fi.name), *t, fi.help)
 	case *float64:
-		fs.Float64Var(t, fi.name, *t, fi.help)
+		fs.Float64Var(t, p(fi.name), *t, fi.help)
 	case *int64:
-		fs.Int64Var(t, fi.name, *t, fi.help)
+		fs.Int64Var(t, p(fi.name), *t, fi.help)
 	case *int:
-		fs.IntVar(t, fi.name, *t, fi.help)
+		fs.IntVar(t, p(fi.name), *t, fi.help)
 	case *string:
-		fs.StringVar(t, fi.name, *t, fi.help)
+		fs.StringVar(t, p(fi.name), *t, fi.help)
 	case *uint64:
-		fs.Uint64Var(t, fi.name, *t, fi.help)
+		fs.Uint64Var(t, p(fi.name), *t, fi.help)
 	case *uint:
-		fs.UintVar(t, fi.name, *t, fi.help)
+		fs.UintVar(t, p(fi.name), *t, fi.help)
 	default:
 		return fmt.Errorf("type %T does not implement flag.Value", fi.field)
 	}
@@ -74,7 +75,7 @@ func newFlagInfo(sf reflect.StructField, v reflect.Value) (*flagInfo, bool) {
 }
 
 // parseFlags returns a flagInfo record for each field of v that supports
-// registration with 1the flag package.
+// registration with the flag package.
 func parseFlags(v interface{}) ([]*flagInfo, error) {
 	s := reflect.ValueOf(v)
 	if s.Kind() != reflect.Ptr {
@@ -96,8 +97,8 @@ func parseFlags(v interface{}) ([]*flagInfo, error) {
 	return flags, nil
 }
 
-// Register adds a flag to fs for each field of v that is flaggable.
-// It is an error if v is not a pointer to a struct value.
+// Register adds a flag to fs for each field of v that is flaggable.  It is an
+// error if v is not a pointer to a struct value.
 //
 // An exported field is flaggable if it has a field tag of the form
 // `flag:"name,usage"` and a pointer to its type implements the flag.Value
@@ -106,7 +107,11 @@ func parseFlags(v interface{}) ([]*flagInfo, error) {
 //
 // Unexported fields and fields without flag tags are skipped without error;
 // however it is an error if there are no flaggable fields in the type.
-func Register(v interface{}, fs *flag.FlagSet) error {
+func Register(v interface{}, fs *flag.FlagSet) error { return RegisterTag("", v, fs) }
+
+// RegisterTag behaves as Register, with the name of each flag prefixed by the
+// given tag.
+func RegisterTag(tag string, v interface{}, fs *flag.FlagSet) error {
 	flags, err := parseFlags(v)
 	if err != nil {
 		return err
@@ -114,7 +119,7 @@ func Register(v interface{}, fs *flag.FlagSet) error {
 		return errors.New("struct contains no flaggable fields")
 	}
 	for _, fi := range flags {
-		if err := fi.register(fs); err != nil {
+		if err := fi.register(fs, tag); err != nil {
 			return err
 		}
 	}

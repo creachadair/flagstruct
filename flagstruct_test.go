@@ -76,19 +76,23 @@ func TestRegistration(t *testing.T) {
 			S string `flag:"wat"` // missing help is OK
 		}{}},
 	}
-	for _, test := range tests {
-		fs := flag.NewFlagSet("dummy", flag.PanicOnError)
-		if err := Register(test.input, fs); err != nil {
-			t.Errorf("Registering %T (%v) failed: %v", test.input, test.input, err)
-			continue
-		}
-		got := fs.Lookup(test.name)
-		if got == nil {
-			t.Errorf("Lookup %q failed: flag not found", test.name)
-			continue
-		}
-		if got.Usage != test.help {
-			t.Errorf("Flag %+v help: got %q, want %q", test.input, got.Usage, test.help)
+	for _, tag := range []string{"", "foo_"} {
+		for _, test := range tests {
+			fs := flag.NewFlagSet("dummy", flag.PanicOnError)
+			if err := RegisterTag(tag, test.input, fs); err != nil {
+				t.Errorf("Registering %T (%v) failed: %v", test.input, test.input, err)
+				continue
+			}
+			name := tag + test.name
+			got := fs.Lookup(name)
+			if got == nil {
+				t.Errorf("Lookup %q failed: flag not found", name)
+				continue
+			}
+			t.Logf("Found flag for %q: %+v", name, got)
+			if got.Usage != test.help {
+				t.Errorf("Flag %+v help: got %q, want %q", test.input, got.Usage, test.help)
+			}
 		}
 	}
 }
