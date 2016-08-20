@@ -97,7 +97,7 @@ func TestRegistration(t *testing.T) {
 	}
 }
 
-func ExampleUsage() {
+func ExampleRegister() {
 	type Config struct {
 		Input  string `flag:"in,The path of the input file"`
 		Output string `flag:"out,The path of the output file"`
