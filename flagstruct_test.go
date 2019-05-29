@@ -8,6 +8,8 @@ import (
 	"time"
 )
 
+//lint:file-ignore U1000 Unused unexported fields are test cases.
+
 func TestTypeErrors(t *testing.T) {
 	// Each of these types should generate an error from Register.
 	tests := []interface{}{
