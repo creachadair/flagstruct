@@ -1,3 +1,3 @@
-module bitbucket.org/creachadair/flagstruct
+module github.com/creachadair/flagstruct
 
 go 1.12

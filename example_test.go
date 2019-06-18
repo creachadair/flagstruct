@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"log"
 
-	"bitbucket.org/creachadair/flagstruct"
+	"github.com/creachadair/flagstruct"
 )
 
 func Example() {

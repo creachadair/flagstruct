@@ -1,6 +1,6 @@
 # Package flagstruct
 
-http://godoc.org/bitbucket.org/creachadair/flagstruct
+http://godoc.org/github.com/creachadair/flagstruct
 
 The `flagstruct` library supports automatic registration of tagged, exported
 struct fields as flags in a `*flag.FlagSet`.
@@ -19,7 +19,7 @@ import (
 	"fmt"
 	"log"
 
-	"bitbucket.org/creachadair/flagstruct"
+	"github.com/creachadair/flagstruct"
 )
 
 // You can define a named type for configuration, but it also works fine with
