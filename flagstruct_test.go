@@ -51,7 +51,7 @@ func TestRegistration(t *testing.T) {
 			D dummy `flag:"dummy,fake"` // *D implements flag.Value directly
 		}{}},
 		{"b", "bool", &struct {
-			B bool `flag:"b,bool"`
+			B bool `flag:"b,bool" flag-default:"true"`
 		}{}},
 		{"d", "duration", &struct {
 			D time.Duration `flag:"d,duration"`
@@ -63,10 +63,10 @@ func TestRegistration(t *testing.T) {
 			Z int64 `flag:"z64,int64"`
 		}{}},
 		{"z", "int", &struct {
-			Z int `flag:"z,int"`
+			Z int `flag:"z,int" flag-default:"227"`
 		}{}},
 		{"s", "string", &struct {
-			S string `flag:"s,string"`
+			S string `flag:"s,string" flag-default:"apple sauce"`
 		}{}},
 		{"u64", "uint64", &struct {
 			UZ uint64 `flag:"u64,uint64"`

@@ -1,16 +1,24 @@
 // Package flagstruct supports automatic registration of struct fields as
 // flags.  Flags are associated with exported struct fields that have a tag
-// giving them a name and help text, for example:
+// declaring them as a flag with the specified name and help text:
 //
 //   flag:"flagname,help description"
 //
+// A flag may optionally be given a default value, using the tag:
+//
+//   flag-default:"default flag value"
+//
+// If a default value is not provided as a tag, the existing value of the
+// target is used as the default.
 package flagstruct
 
 import (
 	"errors"
 	"flag"
 	"fmt"
+	"log"
 	"reflect"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -21,12 +29,71 @@ type flagInfo struct {
 	field interface{} // must be of pointer type
 	name  string
 	help  string
+	dval  *string // default value if not nil, encoded as input to Set
+}
+
+func (fi *flagInfo) setDefault() error {
+	if fi.dval == nil {
+		return nil
+	}
+	switch t := fi.field.(type) {
+	case flag.Value:
+		return t.Set(*fi.dval)
+	case *bool:
+		b, err := strconv.ParseBool(*fi.dval)
+		if err != nil {
+			return err
+		}
+		*t = b
+	case *time.Duration:
+		d, err := time.ParseDuration(*fi.dval)
+		if err != nil {
+			return err
+		}
+		*t = d
+	case *float64:
+		f, err := strconv.ParseFloat(*fi.dval, 64)
+		if err != nil {
+			return err
+		}
+		*t = f
+	case *int, *int64:
+		z, err := strconv.ParseInt(*fi.dval, 0, 64)
+		if err != nil {
+			return err
+		}
+		switch u := t.(type) {
+		case *int:
+			*u = int(z)
+		case *int64:
+			*u = z
+		}
+	case *string:
+		*t = *fi.dval
+	case *uint, *uint64:
+		z, err := strconv.ParseUint(*fi.dval, 0, 64)
+		if err != nil {
+			return err
+		}
+		switch u := t.(type) {
+		case *uint:
+			*u = uint(z)
+		case *uint64:
+			*u = z
+		}
+	default:
+		panic("invalid target for default")
+	}
+	return nil
 }
 
 // register registers fi with fs if fi.field implements flag.Value or is one of
 // the supported built-in types.
 func (fi *flagInfo) register(fs *flag.FlagSet, prefix string) error {
 	p := func(s string) string { return prefix + s }
+	if err := fi.setDefault(); err != nil {
+		return err
+	}
 	switch t := fi.field.(type) {
 	case flag.Value:
 		fs.Var(t, p(fi.name), fi.help)
@@ -61,17 +128,20 @@ func newFlagInfo(sf reflect.StructField, v reflect.Value) (*flagInfo, bool) {
 	if tag == "" || sf.PkgPath != "" {
 		return nil, false // no tag, or field is unexported
 	}
-	name := tag
-	help := tag
-	if i := strings.Index(tag, ","); i >= 0 {
-		name = tag[:i]
-		help = tag[i+1:]
-	}
-	return &flagInfo{
+	fi := &flagInfo{
 		field: v.Addr().Interface(),
-		name:  name,
-		help:  help,
-	}, true
+		name:  tag,
+		help:  tag,
+	}
+	if ps := strings.SplitN(tag, ",", 2); len(ps) == 2 {
+		fi.name = ps[0]
+		fi.help = ps[1]
+	}
+	if dval := sf.Tag.Get("flag-default"); dval != "" {
+		fi.dval = &dval
+		log.Printf("MJF :: flag-default for %q is %q", tag, dval)
+	}
+	return fi, true
 }
 
 // parseFlags returns a flagInfo record for each field of v that supports
