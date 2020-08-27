@@ -1,6 +1,7 @@
 # Package flagstruct
 
-http://godoc.org/github.com/creachadair/flagstruct
+[![GoDoc](https://img.shields.io/static/v1?label=godoc&message=reference&color=blue)](https://pkg.go.dev/github.com/creachadair/flagstruct)
+[![Go Report Card](https://goreportcard.com/badge/github.com/creachadair/atomicfile)](https://goreportcard.com/report/github.com/creachadair/flagstruct)
 
 The `flagstruct` library supports automatic registration of tagged, exported
 struct fields as flags in a `*flag.FlagSet`.
